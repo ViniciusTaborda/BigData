@@ -3,6 +3,7 @@ package TDE01;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -36,10 +37,10 @@ public class Commodity_03 {
 
         // map
         j.setMapOutputKeyClass(Text.class);
-        j.setMapOutputValueClass(CommodidtWritable_03.class);
+        j.setMapOutputValueClass(DoubleWritable.class);
         // reduce
         j.setOutputKeyClass(Text.class);
-        j.setOutputValueClass(IntWritable.class);
+        j.setOutputValueClass(DoubleWritable.class);
 
         // cadastro dos arquivos de entrada e saida
         FileInputFormat.addInputPath(j, input);
@@ -51,41 +52,40 @@ public class Commodity_03 {
         System.exit(1);
     }
 
-    public static class MapForTransactionsCount extends Mapper<LongWritable, Text, Text, CommodidtWritable_03> {
+    public static class MapForTransactionsCount extends Mapper<LongWritable, Text, Text, DoubleWritable> {
         public void map(LongWritable key, Text value, Context con)
                 throws IOException, InterruptedException {
 
             String linha = value.toString();
             if (linha.startsWith("country_or_area")) return;
             String[] dados = linha.split(";");
+
             String ano = dados[1];
             String flow = dados[4];
 
             double qtd = Double.parseDouble(dados[8]);
-            long qtd1 = 1;
-
-
+            //double qtd = 1.0;
 
             int ocorrencia = 1;
 
             if (ano.equals("2016")) {
                 //con.write(new Text(flow), new IntWritable(1));
-                con.write(new Text(flow), new CommodidtWritable_03(ocorrencia, qtd));
+                con.write(new Text(flow), new DoubleWritable(qtd));
 
             }
         }
     }
 
-    public static class ReduceForTransactionsCount extends Reducer<Text, CommodidtWritable_03, Text, IntWritable> {
-        public void reduce(Text key, Iterable<CommodidtWritable_03> values, Context con)
+    public static class ReduceForTransactionsCount extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
+        public void reduce(Text key, Iterable<DoubleWritable> values, Context con)
                 throws IOException, InterruptedException {
 
-            int soma = 0;
-            for (CommodidtWritable_03 v : values) {
-                soma += v.getQtd();
+            double soma = 0;
+            for (DoubleWritable v : values) {
+                soma += v.get();
 
             }
-            con.write(key, new IntWritable(soma));
+            con.write(key, new DoubleWritable(soma));
 
         }
     }
