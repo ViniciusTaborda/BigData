@@ -63,15 +63,15 @@ public class Commodity_03 {
             String ano = dados[1];
             String flow = dados[4];
 
-            double qtd = Double.parseDouble(dados[8]);
-            //double qtd = 1.0;
+            double qtd = 0.0;
+            if (!dados[8].equals("")) {
+                qtd = Double.parseDouble(dados[8]);
+            }
 
             int ocorrencia = 1;
 
             if (ano.equals("2016")) {
-                //con.write(new Text(flow), new IntWritable(1));
                 con.write(new Text(flow), new DoubleWritable(qtd));
-
             }
         }
     }
